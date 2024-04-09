@@ -1,0 +1,68 @@
+import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
+import Image from "next/image";
+import Link from "next/link";
+import styles from "./Navbar.module.css";
+import { Ethereum, Polygon } from '@thirdweb-dev/chains';
+/**
+ * Navigation bar that shows up on all pages.
+ * Rendered in _app.tsx file above the page content.
+ */
+export function Navbar() {
+  const address = useAddress();
+  const tokens = {
+                [37]:
+          
+                  "0x1F435c17d7Ff631218827F9BA43a696650a9D512", // Custom Token on Polygon
+          
+          
+        
+                1: "0x5eA1dd3f3F3685C32D771B2E89A70d9c5cCf8A0C", // Custom Token on Ethereum
+           
+              }
+
+
+  return (
+    <div className={styles.navContainer}>
+      <nav className={styles.nav}>
+        <div className={styles.navLeft}>
+          <Link href="/" className={`${styles.homeLink} ${styles.navLeft}`}>
+            <Image
+              src="/logo.png"
+              width={48}
+              height={48}
+              alt="NFT marketplace sample logo"
+            />
+          </Link>
+
+          <div className={styles.navMiddle}>
+            <Link href="/buy" className={styles.link}>
+              Buy
+            </Link>
+            <Link href="/sell" className={styles.link}>
+              Sell
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.navRight}>
+          <div className={styles.navConnect}>
+            <ConnectWallet
+              displayBalanceToken={tokens}
+    />
+          </div>
+          {address && (
+            <Link className={styles.link} href={`/profile/${address}`}>
+              <Image
+                className={styles.profileImage}
+                src="/user-icon.png"
+                width={42}
+                height={42}
+                alt="Profile"
+              />
+            </Link>
+          )}
+        </div>
+      </nav>
+    </div>
+  );
+}
