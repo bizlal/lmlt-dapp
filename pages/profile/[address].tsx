@@ -1,148 +1,108 @@
-import {
-  useContract,
-  useOwnedNFTs,
-  useValidDirectListings,
-  useValidEnglishAuctions,
-} from "@thirdweb-dev/react";
+// pages/profile/[address].tsx
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import Container from "../../components/Container/Container";
-import ListingWrapper from "../../components/ListingWrapper/ListingWrapper";
-import NFTGrid from "../../components/NFT/NFTGrid";
-import Skeleton from "../../components/Skeleton/Skeleton";
-import {
-  MARKETPLACE_ADDRESS,
-  NFT_COLLECTION_ADDRESS,
-} from "../../const/contractAddresses";
-import styles from "../../styles/Profile.module.css";
-import randomColor from "../../util/randomColor";
+import React, { useState, useEffect } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../lib/firebaseConfig";
+import Profile from "../../components/Profile/Profile";
+import styles from "../../styles/Profile/ProfilePage.module.css";
+import Skeleton from "../../components/Skeleton/Skeleton"; // Assuming you have a Skeleton component
 
-const [randomColor1, randomColor2, randomColor3, randomColor4] = [
-  randomColor(),
-  randomColor(),
-  randomColor(),
-  randomColor(),
-];
+interface UserData {
+  username: string;
+  profile: {
+    bio: string;
+    cover: string;
+    email_address: string;
+    image: string;
+    name: string;
+    total_followers: number;
+    total_following: number;
+    web3: {
+      public_address: string;
+    };
+    location?: string;
+    lmlt_balance?: string;
+  };
+  isArtist: boolean;
+  isCreator: boolean;
+}
 
-export default function ProfilePage() {
+const ProfilePage: React.FC = () => {
   const router = useRouter();
-  const [tab, setTab] = useState<"nfts" | "listings" | "auctions">("nfts");
+  const { address: queryAddress } = router.query;
 
-  const { contract: nftCollection } = useContract(NFT_COLLECTION_ADDRESS);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { contract: marketplace } = useContract(
-    MARKETPLACE_ADDRESS,
-    "marketplace-v3"
-  );
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!queryAddress || typeof queryAddress !== "string") return;
 
-  const { data: ownedNfts, isLoading: loadingOwnedNfts } = useOwnedNFTs(
-    nftCollection,
-    router.query.address as string
-  );
+      try {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", queryAddress));
+        const querySnapshot = await getDocs(q);
 
-  const { data: directListings, isLoading: loadingDirects } =
-    useValidDirectListings(marketplace, {
-      seller: router.query.address as string,
-    });
+        if (querySnapshot.empty) {
+          setError("User not found.");
+          setLoading(false);
+          return;
+        }
 
-  const { data: auctionListings, isLoading: loadingAuctions } =
-    useValidEnglishAuctions(marketplace, {
-      seller: router.query.address as string,
-    });
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          setUserData({
+            username: data.username,
+            profile: {
+              bio: data.profile.bio || "",
+              cover: data.profile.cover || "",
+              email_address: data.profile.email_address || "",
+              image: data.profile.image || "",
+              name: data.profile.name || "",
+              total_followers: data.profile.total_followers || 0,
+              total_following: data.profile.total_following || 0,
+              web3: {
+                public_address: data.profile.web3?.public_address || "",
+              },
+              location: data.profile.location || "",
+              lmlt_balance: data.profile.lmlt_balance || "0.00",
+            },
+            isArtist: data.isArtist || false,
+            isCreator: data.isCreator || false,
+          });
+        });
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        setError("Failed to fetch user data.");
+      }
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, [queryAddress]);
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <Skeleton width="100%" height="300px" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <p className={styles.error}>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <Container maxWidth="lg">
-      <div className={styles.profileHeader}>
-        <div
-          className={styles.coverImage}
-          style={{
-            background: `linear-gradient(90deg, ${randomColor1}, ${randomColor2})`,
-          }}
-        />
-        <div
-          className={styles.profilePicture}
-          style={{
-            background: `linear-gradient(90deg, ${randomColor3}, ${randomColor4})`,
-          }}
-        />
-        <h1 className={styles.profileName}>
-          {router.query.address ? (
-            router.query.address.toString().substring(0, 4) +
-            "..." +
-            router.query.address.toString().substring(38, 42)
-          ) : (
-            <Skeleton width="320" />
-          )}
-        </h1>
-      </div>
-
-      <div className={styles.tabs}>
-        <h3
-          className={`${styles.tab} 
-        ${tab === "nfts" ? styles.activeTab : ""}`}
-          onClick={() => setTab("nfts")}
-        >
-          NFTs
-        </h3>
-        <h3
-          className={`${styles.tab} 
-        ${tab === "listings" ? styles.activeTab : ""}`}
-          onClick={() => setTab("listings")}
-        >
-          Listings
-        </h3>
-        <h3
-          className={`${styles.tab}
-        ${tab === "auctions" ? styles.activeTab : ""}`}
-          onClick={() => setTab("auctions")}
-        >
-          Auctions
-        </h3>
-      </div>
-
-      <div
-        className={`${
-          tab === "nfts" ? styles.activeTabContent : styles.tabContent
-        }`}
-      >
-        <NFTGrid
-          data={ownedNfts}
-          isLoading={loadingOwnedNfts}
-          emptyText="Looks like you don't have any NFTs from this collection. Head to the buy page to buy some!"
-        />
-      </div>
-
-      <div
-        className={`${
-          tab === "listings" ? styles.activeTabContent : styles.tabContent
-        }`}
-      >
-        {loadingDirects ? (
-          <p>Loading...</p>
-        ) : directListings && directListings.length === 0 ? (
-          <p>Nothing for sale yet! Head to the sell tab to list an NFT.</p>
-        ) : (
-          directListings?.map((listing) => (
-            <ListingWrapper listing={listing} key={listing.id} />
-          ))
-        )}
-      </div>
-
-      <div
-        className={`${
-          tab === "auctions" ? styles.activeTabContent : styles.tabContent
-        }`}
-      >
-        {loadingAuctions ? (
-          <p>Loading...</p>
-        ) : auctionListings && auctionListings.length === 0 ? (
-          <p>Nothing for sale yet! Head to the sell tab to list an NFT.</p>
-        ) : (
-          auctionListings?.map((listing) => (
-            <ListingWrapper listing={listing} key={listing.id} />
-          ))
-        )}
-      </div>
-    </Container>
+    <div className={styles.container}>
+      {userData ? <Profile userData={userData} /> : <p>User data unavailable.</p>}
+    </div>
   );
-}
+};
+
+export default ProfilePage;

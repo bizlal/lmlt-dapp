@@ -1,0 +1,168 @@
+/* styles/Profile/TabContent.module.css */
+
+/* Container for each tab's content */
+.tabSection {
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Heading within each tab */
+.tabSection h2 {
+  margin-bottom: 10px;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Paragraph or description within each tab */
+.tabSection p {
+  color: #cccccc;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Container for list items (e.g., releases, collectibles) */
+.contentList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Individual item within the list */
+.contentItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #1e1d23;
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid #43434d;
+  transition: background 0.3s ease;
+}
+
+.contentItem:hover {
+  background: #2a2830;
+}
+
+/* Image or icon within the item */
+.itemImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+/* Content within the item (title and description) */
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Title of the item */
+.itemTitle {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Description or additional info of the item */
+.itemDescription {
+  color: #b3b3b3;
+  font-size: 0.95rem;
+}
+
+/* Action buttons or icons within the item */
+.itemActions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+/* Button styles */
+.actionButton {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 1rem;
+}
+
+.actionButton:hover {
+  color: #ffffff;
+}
+
+/* Responsive Design */
+
+/* Tablets and Medium Screens */
+@media (max-width: 1024px) {
+  .contentItem {
+    padding: 12px;
+  }
+
+  .itemImage {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+  }
+
+  .itemTitle {
+    font-size: 1.1rem;
+  }
+
+  .itemDescription {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 768px) {
+  .tabSection {
+    padding: 15px 0;
+  }
+
+  .contentItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .itemImage {
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .itemContent {
+    width: 100%;
+  }
+
+  .itemActions {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  .tabSection h2 {
+    font-size: 1.3rem;
+  }
+
+  .itemImage {
+    height: 150px;
+  }
+
+  .itemTitle {
+    font-size: 1rem;
+  }
+
+  .itemDescription {
+    font-size: 0.85rem;
+  }
+}

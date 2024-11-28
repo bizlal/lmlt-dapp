@@ -1,0 +1,25 @@
+/* styles/Profile/ProfileStats.module.css */
+
+.statsContainer {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  margin: 10px 0;
+}
+
+.statItem strong {
+  display: block;
+  font-size: 1.4rem;
+  color: white;
+}
+
+.statItem p {
+  margin-top: 5px;
+  font-size: 1rem;
+  color: #b3b3b3;
+}

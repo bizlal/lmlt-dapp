@@ -38,6 +38,12 @@ export function Navbar() {
             <Link href="/buy" className={styles.link}>
               Buy
             </Link>
+            <Link href="/create_profile" className={styles.link}>
+              Create
+            </Link>
+            <Link href="/profile" className={styles.link}>
+              Explore
+            </Link>
             <Link href="/sell" className={styles.link}>
               Sell
             </Link>

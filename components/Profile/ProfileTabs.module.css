@@ -1,0 +1,52 @@
+/* styles/Profile/ProfileTabs.module.css */
+
+.tabsContainer {
+  margin: 20px 0;
+}
+
+.tabButtons {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid #43434d;
+}
+
+.tabButton {
+  font-size: 1rem;
+  background: none;
+  color: #b3b3b3;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: color 0.3s, background 0.3s;
+}
+
+.tabButton:hover {
+  color: white;
+}
+
+.activeTab {
+  color: white;
+  background: linear-gradient(90deg, #cf4c87, #8d52cc);
+  border-radius: 20px;
+}
+
+.tabContent {
+  padding: 20px;
+  background: #1e1d23;
+  border-radius: 10px;
+  border: 1px solid #43434d;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .tabButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tabButton {
+    width: 100%;
+    text-align: center;
+    margin: 5px 0;
+  }
+}

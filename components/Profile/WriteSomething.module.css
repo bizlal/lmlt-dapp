@@ -1,0 +1,30 @@
+/* styles/Profile/WriteSomething.module.css */
+
+.writeContainer {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  background: #1e1d23;
+  margin-top: 20px;
+  border: 1px solid #43434d;
+}
+
+.writeIcon {
+  color: #b3b3b3;
+  margin-right: 10px;
+}
+
+.writeInput {
+  width: 100%;
+  border: none;
+  background: none;
+  outline: none;
+  color: #fff;
+  font-size: 1rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.writeInput::placeholder {
+  color: #b3b3b3;
+}
