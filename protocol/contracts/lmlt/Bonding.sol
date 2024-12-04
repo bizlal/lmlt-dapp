@@ -9,14 +9,15 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 // Importing Limelight-specific contracts
-import "./FFactory.sol";
-import "./IFPair.sol";
-import "./FRouter.sol";
-import "./FERC20.sol";
-import "../virtualPersona/IArtistFactoryV4.sol"; // Updated import
-import "../contributions/IContributionNft.sol";
-import "../services/IServiceNft.sol";
-import "../governance/IGovernanceDAO.sol";
+import "../fun/FFactory.sol";
+import "../fun/IFPair.sol";
+import "../fun/FRouter.sol";
+import "../fun/FERC20.sol";
+import "./IArtistFactoryV3.sol"; // Updated import
+//import "../contributions/IContributionNft.sol";
+// Removed unused imports
+// import "../services/IServiceNft.sol";
+// import "../governance/IGovernanceDAO.sol";
 
 contract Bonding is
     Initializable,
@@ -39,8 +40,9 @@ contract Bonding is
     uint256 public maxTx;
     address public artistFactory; // Updated variable name
     address public contributionNft;
-    address public serviceNft;
-    address public governanceDAO;
+    // Removed unused variables
+    // address public serviceNft;
+    // address public governanceDAO;
 
     struct Profile {
         address user;
@@ -94,8 +96,15 @@ contract Bonding is
     mapping(address => Token) public tokenInfo;
     address[] public tokenInfos;
 
+    // Added for price history tracking
+    struct PriceData {
+        uint256 timestamp;
+        uint256 price;
+    }
+
+    mapping(address => PriceData[]) private priceHistory;
+
     event Launched(address indexed token, address indexed pair, uint256 index);
-    event Deployed(address indexed token, uint256 amount0, uint256 amount1);
     event Graduated(address indexed token, address artistToken); // Updated event
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -117,9 +126,9 @@ contract Bonding is
         uint256 maxTx_,
         address artistFactory_, // Updated parameter name
         uint256 gradThreshold_,
-        address contributionNft_,
-        address serviceNft_,
-        address governanceDAO_
+        address contributionNft_ // Removed unused parameters
+        // address serviceNft_,
+        // address governanceDAO_
     ) external initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -139,15 +148,17 @@ contract Bonding is
         gradThreshold = gradThreshold_;
 
         contributionNft = contributionNft_;
-        serviceNft = serviceNft_;
-        governanceDAO = governanceDAO_;
+        // Removed unused variables
+        // serviceNft = serviceNft_;
+        // governanceDAO = governanceDAO_;
     }
 
     /**
      * @dev Creates a user profile if it doesn't exist.
      */
     function _createUserProfile(address _user) internal returns (bool) {
-        address[] memory _tokens;
+        address;
+        address[] memory _tokens = new address[](0);
         Profile memory _profile = Profile({user: _user, tokens: _tokens});
         profile[_user] = _profile;
         profiles.push(_user);
@@ -280,12 +291,12 @@ contract Bonding is
             _name: _name,
             ticker: _ticker,
             supply: supply,
-            price: supply / liquidity,
+            price: (liquidity * 1e18) / supply, // Adjusted price calculation
             marketCap: liquidity,
             liquidity: liquidity * 2,
             volume: 0,
             volume24H: 0,
-            prevPrice: supply / liquidity,
+            prevPrice: (liquidity * 1e18) / supply, // Adjusted price calculation
             lastUpdated: block.timestamp
         });
 
@@ -340,38 +351,18 @@ contract Bonding is
     function sell(uint256 amountIn, address tokenAddress) external returns (bool) {
         require(tokenInfo[tokenAddress].trading, "Token not trading");
 
-        address pairAddress = factory.getPair(tokenAddress, router.assetToken());
-        IFPair pair = IFPair(pairAddress);
+        FERC20 token = FERC20(tokenAddress);
+        token.transferFrom(msg.sender, address(this), amountIn);
 
-        (uint256 reserveA, uint256 reserveB) = pair.getReserves();
+        address pairAddress = factory.getPair(tokenAddress, router.assetToken());
+
+        // Approve router to spend tokens
+        _approval(address(router), tokenAddress, amountIn);
 
         (uint256 amount0In, uint256 amount1Out) = router.sell(amountIn, tokenAddress, msg.sender);
 
-        uint256 newReserveA = reserveA + amount0In;
-        uint256 newReserveB = reserveB - amount1Out;
-        uint256 duration = block.timestamp - tokenInfo[tokenAddress].data.lastUpdated;
-
-        uint256 liquidity = newReserveB * 2;
-        uint256 mCap = (tokenInfo[tokenAddress].data.supply * newReserveB) / newReserveA;
-        uint256 price = newReserveA / newReserveB;
-        uint256 volume = duration > 86400
-            ? amount1Out
-            : tokenInfo[tokenAddress].data.volume24H + amount1Out;
-        uint256 prevPrice = duration > 86400
-            ? tokenInfo[tokenAddress].data.price
-            : tokenInfo[tokenAddress].data.prevPrice;
-
-        // Update token data
-        tokenInfo[tokenAddress].data.price = price;
-        tokenInfo[tokenAddress].data.marketCap = mCap;
-        tokenInfo[tokenAddress].data.liquidity = liquidity;
-        tokenInfo[tokenAddress].data.volume += amount1Out;
-        tokenInfo[tokenAddress].data.volume24H = volume;
-        tokenInfo[tokenAddress].data.prevPrice = prevPrice;
-
-        if (duration > 86400) {
-            tokenInfo[tokenAddress].data.lastUpdated = block.timestamp;
-        }
+        // Update price data
+        _updatePriceData(tokenAddress, amount1Out, false);
 
         return true;
     }
@@ -382,45 +373,72 @@ contract Bonding is
     function buy(uint256 amountIn, address tokenAddress) external payable returns (bool) {
         require(tokenInfo[tokenAddress].trading, "Token not trading");
 
+        address assetToken = router.assetToken();
+
+        // Transfer asset tokens from the buyer to this contract
+        IERC20(assetToken).safeTransferFrom(msg.sender, address(this), amountIn);
+
+        // Approve router to spend asset tokens
+        _approval(address(router), assetToken, amountIn);
+
+        (uint256 amount1In, uint256 amount0Out) = router.buy(amountIn, tokenAddress, msg.sender);
+
+        // Update price data
+        _updatePriceData(tokenAddress, amount1In, true);
+
+        // Check if token should graduate
+        address pairAddress = factory.getPair(tokenAddress, assetToken);
+        IFPair pair = IFPair(pairAddress);
+        uint256 reserveA = pair.reserve0(); // Assuming token is token0
+        if (reserveA <= gradThreshold && tokenInfo[tokenAddress].trading) {
+            _openTradingOnUniswap(tokenAddress);
+        }
+
+        return true;
+    }
+
+    /**
+     * @dev Updates price data after a buy or sell operation.
+     */
+    function _updatePriceData(address tokenAddress, uint256 amount, bool isBuy) internal {
+        Token storage tokenData = tokenInfo[tokenAddress];
         address pairAddress = factory.getPair(tokenAddress, router.assetToken());
         IFPair pair = IFPair(pairAddress);
 
         (uint256 reserveA, uint256 reserveB) = pair.getReserves();
 
-        (uint256 amount1In, uint256 amount0Out) = router.buy(amountIn, tokenAddress, msg.sender);
+        uint256 newReserveA = reserveA;
+        uint256 newReserveB = reserveB;
 
-        uint256 newReserveA = reserveA - amount0Out;
-        uint256 newReserveB = reserveB + amount1In;
-        uint256 duration = block.timestamp - tokenInfo[tokenAddress].data.lastUpdated;
+        uint256 duration = block.timestamp - tokenData.data.lastUpdated;
 
         uint256 liquidity = newReserveB * 2;
-        uint256 mCap = (tokenInfo[tokenAddress].data.supply * newReserveB) / newReserveA;
-        uint256 price = newReserveA / newReserveB;
+        uint256 mCap = (tokenData.data.supply * newReserveB) / newReserveA;
+        uint256 price = (newReserveB * 1e18) / newReserveA; // Adjusted price calculation
         uint256 volume = duration > 86400
-            ? amount1In
-            : tokenInfo[tokenAddress].data.volume24H + amount1In;
-        uint256 _price = duration > 86400
-            ? tokenInfo[tokenAddress].data.price
-            : tokenInfo[tokenAddress].data.prevPrice;
+            ? amount
+            : tokenData.data.volume24H + amount;
+        uint256 prevPrice = duration > 86400
+            ? tokenData.data.price
+            : tokenData.data.prevPrice;
 
         // Update token data
-        tokenInfo[tokenAddress].data.price = price;
-        tokenInfo[tokenAddress].data.marketCap = mCap;
-        tokenInfo[tokenAddress].data.liquidity = liquidity;
-        tokenInfo[tokenAddress].data.volume += amount1In;
-        tokenInfo[tokenAddress].data.volume24H = volume;
-        tokenInfo[tokenAddress].data.prevPrice = _price;
+        tokenData.data.price = price;
+        tokenData.data.marketCap = mCap;
+        tokenData.data.liquidity = liquidity;
+        tokenData.data.volume += amount;
+        tokenData.data.volume24H = volume;
+        tokenData.data.prevPrice = prevPrice;
 
         if (duration > 86400) {
-            tokenInfo[tokenAddress].data.lastUpdated = block.timestamp;
+            tokenData.data.lastUpdated = block.timestamp;
         }
 
-        // Check if token should graduate
-        if (newReserveA <= gradThreshold && tokenInfo[tokenAddress].trading) {
-            _openTradingOnUniswap(tokenAddress);
-        }
-
-        return true;
+        // Record price data
+        priceHistory[tokenAddress].push(PriceData({
+            timestamp: block.timestamp,
+            price: price
+        }));
     }
 
     /**
@@ -446,9 +464,8 @@ contract Bonding is
 
         IERC20(router.assetToken()).approve(artistFactory, assetBalance);
 
-        // Updated function call to match `IArtistFactoryV4`
-        uint256 id = IArtistFactoryV4(artistFactory).initFromToken(
-            address(token_),
+        // Updated function call to match `IArtistFactoryV3`
+        uint256 id = IArtistFactoryV3(artistFactory).initFromBondingCurve(
             _token.data._name,
             _token.data.ticker,
             _token.cores,
@@ -459,7 +476,7 @@ contract Bonding is
             assetBalance
         );
 
-        address artistToken = IArtistFactoryV4(artistFactory).executeTokenApplication(
+        address artistToken = IArtistFactoryV3(artistFactory).executeBondingCurveApplication(
             id,
             _token.data.supply,
             tokenBalance,
@@ -499,5 +516,43 @@ contract Bonding is
                 artistToken.transferFrom(pairAddress, acc, balance);
             }
         }
+    }
+
+    /**
+     * @dev Retrieves the artist profile based on their token address.
+     */
+    function getArtistProfile(address tokenAddress) external view returns (
+        string memory name,
+        string memory description,
+        string memory image,
+        string memory twitter,
+        string memory telegram,
+        string memory youtube,
+        string memory website
+    ) {
+        Token memory token = tokenInfo[tokenAddress];
+        require(token.creator != address(0), "Artist does not exist");
+
+        name = token.data._name;
+        description = token.description;
+        image = token.image;
+        twitter = token.twitter;
+        telegram = token.telegram;
+        youtube = token.youtube;
+        website = token.website;
+    }
+
+    /**
+     * @dev Retrieves the price history of a token.
+     */
+    function getPriceHistory(address tokenAddress) external view returns (PriceData[] memory) {
+        return priceHistory[tokenAddress];
+    }
+
+    /**
+     * @dev Retrieves a list of all artist token addresses.
+     */
+    function getAllArtists() external view returns (address[] memory) {
+        return tokenInfos;
     }
 }
