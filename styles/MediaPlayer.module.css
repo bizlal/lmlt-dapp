@@ -1,0 +1,264 @@
+/* src/styles/MediaPlayer.module.css */
+
+.mediaPlayer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #000;
+  color: white;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+}
+
+/* Collapsed State */
+.collapsed {
+  height: 70px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Expanded State */
+.expanded {
+  top: 60px; /* Adjust based on navbar height */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 60px); /* Full height minus navbar */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  background-color: #000; /* Solid background to cover video edges */
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+}
+
+/* Song Information */
+.songInfo {
+  display: flex;
+  align-items: center;
+}
+
+.coverArt {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  margin-right: 15px;
+}
+
+.songDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.songTitle {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.artistName {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.genre {
+  font-size: 0.8rem;
+  color: #bbb;
+}
+
+/* Toggle Button */
+.toggleButton {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: white;
+}
+
+/* Expanded Content */
+.expandedContent {
+  flex: 1;
+  position: relative;
+  background-color: #000;
+}
+
+/* Media Player (ReactPlayer) */
+.playerWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.reactPlayer {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Overlay Controls */
+.overlayControls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 2;
+}
+
+.overlayControls button {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.overlayControls button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.controlButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.controlButton:hover {
+  color: #aaa;
+}
+
+.progressBar {
+  flex: 1;
+  margin: 0 15px;
+}
+
+.time {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+/* Additional Controls in Expanded State */
+.additionalControls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.volumeControl {
+  display: flex;
+  align-items: center;
+}
+
+.volumeControl input[type="range"] {
+  margin-left: 10px;
+}
+
+/* Close Button for Expanded State */
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #aaa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .expanded {
+    padding: 0;
+  }
+
+  .coverArt {
+    width: 40px;
+    height: 40px;
+  }
+
+  .songTitle {
+    font-size: 0.9rem;
+  }
+
+  .artistName {
+    font-size: 0.75rem;
+  }
+
+  .genre {
+    font-size: 0.7rem;
+  }
+
+  .toggleButton {
+    font-size: 1.2rem;
+  }
+
+  .controlButton {
+    font-size: 1.2rem;
+  }
+
+  .overlayControls button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .additionalControls {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

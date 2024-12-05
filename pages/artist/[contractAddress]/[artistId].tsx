@@ -3,6 +3,7 @@ import {
   Web3Button,
   useContractRead,
   useContractWrite,
+  ThirdwebSDK,
 } from "@thirdweb-dev/react";
 import React, { useState, useEffect } from "react";
 import Container from "../../../components/Container/Container";

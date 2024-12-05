@@ -1,58 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Navbar Styles */
 .navContainer {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: fixed;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   z-index: 3;
-  background-color: transparent !important;
+  background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  font-family: 'Poppins', sans-serif;
 }
 
 .nav {
-  padding-left: 2em;
-  padding-right: 2em;
+  padding: 20px 2em;
   display: flex;
-  padding-top: 20px;
-  padding-bottom: 20px;
   align-items: center;
   justify-content: space-between;
-  width: 98%;
+  width: 100%;
   max-width: 1260px;
-  background-color: transparent !important;
 }
 
 .navLeft {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 12px;
-  transition: all 0.15s ease-in-out;
 }
 
 .navMiddle {
   display: flex;
   margin-left: 12px;
-  flex-direction: row;
   align-items: center;
   gap: 24px;
 }
 
 .link {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 16px;
   font-weight: 500;
-  letter-spacing: 0.2px;
-  line-height: 16px;
   transition: color 0.3s ease-in-out;
+  text-decoration: none;
 }
 
 .link:hover {
-  color: rgba(255, 255, 255, 1);
+  color: #ffffff;
+}
+
+.homeLink {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .homeLink:hover {
@@ -62,34 +63,242 @@
 
 .navRight {
   display: flex;
-  flex-direction: row;
-  gap: 16px;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
 }
 
-.profileImage {
-  margin-top: 6px;
-  transition: all 0.15s ease-in-out;
-}
-
-.profileImage:hover {
+.connectButton {
+  background: #8d52cc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
   cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.connectButton:hover {
+  background: #a650b2;
+}
+
+.balanceButton {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(
+      116.94deg,
+      #8d52cc -39.29%,
+      #a650b2 -26%,
+      #bc4e9b -15.53%,
+      #cf4c87 1.54%,
+      #db4b7b 11.57%,
+      #a9638f 37.88%,
+      #8c719b 49.86%,
+      #727ea6 64.46%,
+      #4893b7 89.21%
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+  padding: 0 12px;
+  height: 40px;
+  border-radius: 34.5px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  opacity: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.balanceButton:hover {
   opacity: 0.8;
 }
 
-.homeLink {
+.ethLogo {
+  margin-right: 8px;
+}
+
+.balanceInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.usdConversion {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Dark overlay for the background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: #1e1e1e; /* Dark background for the modal */
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 500px;
+  max-width: 90%;
+  max-height: 90%; /* Prevent overflow on smaller screens */
+  text-align: center;
+  position: relative;
+  overflow-y: auto; /* Add scrolling for long content */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Shadow for the modal */
+  font-family: 'Poppins', sans-serif;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.modalHeader h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
   font-size: 24px;
-  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
-.buttonLink:hover {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+.closeButton:hover {
+  color: #ff4d4d; /* Hover effect for the close button */
 }
 
-/* Sreens less than 720px */
-@media (max-width: 500px) {
-  .navConnect {
-    display: none !important;
+.userInfo {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.userImage {
+  border-radius: 50%;
+  margin-bottom: 10px;
+  width: 80px;
+  height: 80px;
+}
+
+.displayName {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.walletAddress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #ccc;
+  gap: 8px;
+}
+
+.copyButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s ease;
+}
+
+.copyButton:hover {
+  color: white;
+}
+
+.tokenList {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  max-height: 300px; /* Limit height to avoid overflowing */
+  overflow-y: auto; /* Enable scrolling if the list exceeds max-height */
+}
+
+.tokenItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333; /* Divider between token items */
+}
+
+.tokenDetails {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tokenBalances {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.usdValue {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.disconnectButton {
+  background: #e63946;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.disconnectButton:hover {
+  background: #d62828;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 90%;
+    padding: 20px 15px;
+  }
+
+  .userImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .displayName {
+    font-size: 16px;
+  }
+
+  .usdValue {
+    font-size: 10px;
+  }
+
+  .disconnectButton {
+    width: 100%;
   }
 }
